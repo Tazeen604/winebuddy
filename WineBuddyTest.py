@@ -3,11 +3,11 @@ import openai
 import re
 import mysql.connector
 app = Flask(__name__)
-openai.api_key = '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'
+openai.api_key = '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'
 db_connection = mysql.connector.connect(
     host="localhost",
-    user="qrvino",
-    password="Jorsha777$",
+    user="root",
+    password="",
     database="qrvino"
 )
 
@@ -38,7 +38,7 @@ def chatGPT_response():
     wine_option = request.args.get("chatbot_radio", "")
     conversation = [
             {"role": "system", "content": "You are WineBuddy, the Virtual Sommelier."},
-            {"role": "system", "content": f'According to famous sommeliers, what wine pairs with {user_input}?\n- {wine_option}'},
+            {"role": "system", "content": f'According to famous sommeliers, what {user_input}? {wine_option}'},
             
         ]
     chatbot_response = get_chatbot_response(conversation)
@@ -61,7 +61,7 @@ def chatGPT_response():
     # Split response into paragraphs while preserving links
     paragraphs_with_links = formatted_response.split('\n\n')
 
-    return render_template("chatGPT_response.html", paragraphs_with_links=paragraphs_with_links)
+    return render_template("chatGPT_response.html", paragraphs_with_links=paragraphs_with_links,test=matched_varietals)
 
 @app.route("/restaurants")
 def restaurants():
