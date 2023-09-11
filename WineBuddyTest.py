@@ -6,8 +6,8 @@ app = Flask(__name__)
 openai.api_key = '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'
 db_connection = mysql.connector.connect(
     host="localhost",
-    user="root",
-    password="",
+    user="qrvino",
+    password="Jorsha777$",
     database="qrvino"
 )
 
