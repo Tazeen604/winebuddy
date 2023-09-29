@@ -3,11 +3,11 @@ import openai
 import re
 import mysql.connector
 app = Flask(__name__)
-openai.api_key = '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'
+openai.api_key = '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'
 db_connection = mysql.connector.connect(
     host="localhost",
-    user="qrvino",
-    password="Jorsha777$",
+    user="root",
+    password="",
     database="qrvino"
 )
 
@@ -69,7 +69,7 @@ def restaurants():
     
     if db_connection.is_connected():
         cursor = db_connection.cursor(dictionary=True)
-        query = "SELECT RSTRNT_NM,RSTRNT_KEY FROM RSTRNT WHERE ChatGPT_IND = 'Y'"
+        query = "SELECT RSTRNT_NM,RSTRNT_KEY FROM rstrnt WHERE ChatGPT_IND = 'Y'"
         cursor.execute(query)
         restaurants = cursor.fetchall()
         return render_template("restaurants.html", restr=restaurants, key_value=key)
@@ -80,13 +80,29 @@ def external_URL():
     if request.method == "POST":
         selected_restaurant_key = request.form.get("selected_restaurant")
         keyValue = request.form.get("keyvalue")
-        print(keyValue)
             # Replace your_vrtl_key_here with the appropriate value          
             # Get the target URL using the separate function
         target_url = get_target_url(selected_restaurant_key,keyValue)
-        print(target_url)
         if target_url:
             return redirect(target_url)
+        else:
+            # Handle the case where target_url is not available
+            return """
+                <html>
+                <head>
+                    <script>
+                        alert("Target URL not found");
+                        window.location.href = "/restaurants";  // Redirect to the restaurants URL
+                    </script>
+                </head>
+                <body>
+                    <p>If you are not redirected, <a href="/restaurants">click here</a>.</p>
+                </body>
+                </html>
+            """, 404
+    else:
+        # Handle GET request or other methods
+        return "Invalid request method", 405
 
 
 def get_target_url(restaurant_key, vrtl_key):
@@ -98,11 +114,11 @@ def get_target_url(restaurant_key, vrtl_key):
         """
         cursor.execute(query, (restaurant_key, vrtl_key))
         url_result = cursor.fetchone()
-        
+
         if url_result:
             return url_result["AFLT_VTRL_URL"]
-    
-    return None
-
+    else:
+        # Handle GET request or other methods
+        return "Invalid request method", 405
 if __name__ == "__main__":
     app.run(debug=True)
