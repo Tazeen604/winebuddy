@@ -3,7 +3,7 @@ import openai
 import re
 import mysql.connector
 app = Flask(__name__)
-openai.api_key = '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'
+openai.api_key = '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'
 db_connection = mysql.connector.connect(
     host="localhost",
     user="qrvino",
@@ -50,7 +50,7 @@ def chatGPT_response():
     if db_connection.is_connected():
         cursor = db_connection.cursor()
         #for heading in headings:
-        query = "SELECT VRTL_NM,VRTL_KEY FROM vrtl"
+        query = "SELECT VRTL_NM,VRTL_KEY FROM AI_VRTL"
         cursor.execute(query)
         matched_varietals = cursor.fetchall()
     formatted_response = chatbot_response
@@ -105,4 +105,4 @@ def get_target_url(restaurant_key, vrtl_key):
     return None
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0')
