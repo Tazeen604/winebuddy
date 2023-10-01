@@ -121,4 +121,4 @@ def get_target_url(restaurant_key, vrtl_key):
         # Handle GET request or other methods
         return "Invalid request method", 405
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0')
