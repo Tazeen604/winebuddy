@@ -3,7 +3,7 @@ import openai
 import re
 import mysql.connector
 app = Flask(__name__)
-openai.api_key = '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'
+openai.api_key = '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'
 db_connection = mysql.connector.connect(
     host="localhost",
     user="root",
