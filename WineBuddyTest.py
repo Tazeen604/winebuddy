@@ -2,13 +2,16 @@ from flask import Flask, render_template, request,redirect,g
 import openai
 import re
 import mysql.connector
+#from customers import app as customers_app
+from customers import customers_bp
 app = Flask(__name__)
-openai.api_key = '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'
+app.register_blueprint(customers_bp)
+openai.api_key = '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'
 db_connection = mysql.connector.connect(
     host="localhost",
     user="root",
     password="",
-    database="qrvino"
+    database="qrvino_db"
 )
 
 def get_chatbot_response(messages):
@@ -50,7 +53,7 @@ def chatGPT_response():
     if db_connection.is_connected():
         cursor = db_connection.cursor()
         #for heading in headings:
-        query = "SELECT VRTL_NM,VRTL_KEY FROM vrtl"
+        query = "SELECT VRTL_NM,VRTL_KEY FROM ai_vrtl"
         cursor.execute(query)
         matched_varietals = cursor.fetchall()
     formatted_response = chatbot_response
@@ -69,7 +72,7 @@ def restaurants():
     
     if db_connection.is_connected():
         cursor = db_connection.cursor(dictionary=True)
-        query = "SELECT RSTRNT_NM,RSTRNT_KEY FROM rstrnt WHERE ChatGPT_IND = 'Y'"
+        query = "SELECT RSTRNT_NM,RSTRNT_KEY FROM ai_rstrnt WHERE ChatGPT_IND = 'Y'"
         cursor.execute(query)
         restaurants = cursor.fetchall()
         return render_template("restaurants.html", restr=restaurants, key_value=key)
@@ -122,3 +125,4 @@ def get_target_url(restaurant_key, vrtl_key):
         return "Invalid request method", 405
 if __name__ == "__main__":
     app.run(debug=True)
+    customers_app.run(debug=True)
