@@ -7,7 +7,7 @@ from customers import customers_bp
 app = Flask(__name__)
 app.secret_key = '112233'
 app.register_blueprint(customers_bp)
-openai.api_key = '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'
+openai.api_key = ''
 db_connection = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -63,7 +63,7 @@ def chatGPT_response():
     if db_connection.is_connected():
         cursor = db_connection.cursor()
         #for heading in headings:
-        query = "SELECT VRTL_NM,VRTL_KEY FROM ai_vrtl"
+        query = "SELECT VRTL_NM,VRTL_KEY FROM AI_VRTL"
         cursor.execute(query)
         matched_varietals = cursor.fetchall()
     formatted_response = chatbot_response
@@ -134,5 +134,6 @@ def get_target_url(restaurant_key, vrtl_key):
         # Handle GET request or other methods
         return "Invalid request method", 405
 if __name__ == "__main__":
-    app.run(debug=True)
-    customers_app.run(debug=True)
+    app.run(host='0.0.0.0')
+    customers_bp.run(host='0.0.0.0')
+
