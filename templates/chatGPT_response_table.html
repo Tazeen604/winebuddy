@@ -23,9 +23,27 @@
     <div class="container custom-container mt-3">
         <h2>ChatGPT Response</h2>
         
-    {% for paragraph in paragraphs_with_links %}
-        <p>{{ paragraph | safe }}</p>
-    {% endfor %}
+        <table class="table table-striped">
+            <thead>
+            <th>Varietal</th>
+            <th>Varietal Description</th>
+            <th>Popularity Score</th>
+            </thead>
+           
+            <tbody>
+                {% for i in range(var|length) %}
+            <tr>
+            <td>{{ var[i]|safe }}</td>
+            <td>{{ desc[i]|replace('\n', '<br>')|safe  }}</td>
+            <td>{{ score[i] }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            
+            
+        </table>
+
+   
     </div>
 </body>
 </html>

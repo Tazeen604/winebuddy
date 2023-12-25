@@ -33,9 +33,9 @@
             {% for restaurant in restr %}
             <div class="p-3">
                 <label>
-                    <input type="hidden" name="keyvalue" value="{{key_value}}" >
-                    <input  type="radio" name="selected_restaurant" value="{{ restaurant.RSTRNT_KEY }}">
-                  {{ restaurant.RSTRNT_NM }}  
+                    <input type="hidden" name="vrtlkey" value="{{vrtl_key}}" >
+                    <input  type="radio" name="selected_restaurant" value="{{ restaurant.WINE_SELR_KEY }}">
+                  {{ restaurant.WINE_SELR_NM }}  
                  </label>
             </div>
                

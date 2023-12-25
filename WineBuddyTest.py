@@ -5,8 +5,9 @@ import mysql.connector
 #from customers import app as customers_app
 from customers import customers_bp
 app = Flask(__name__)
+app.secret_key = '112233'
 app.register_blueprint(customers_bp)
-openai.api_key = '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'
+openai.api_key = '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'
 db_connection = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -31,19 +32,28 @@ def extract_clickable_headings(response):
 def index():
     if request.method == "POST":
         user_input = request.form.get("user_input")
-        wine_option = request.form.get('wine_option')
-       
-        return redirect("/chatGPT_response?chatbot_input=" + user_input + "&chatbot_radio=" + wine_option)
+        wine_option = request.form.get('wine_option')  
+        customer_name = request.form.get('customer_name')
+        if customer_name:
+           return redirect("/chatGPT_response_table?chatbot_input=" + user_input + "&chatbot_radio=" + wine_option + "&customerName=" + customer_name)
+        else:
+            return redirect("/chatGPT_response?chatbot_input=" + user_input + "&chatbot_radio=" + wine_option)
     return render_template("index.html")
 @app.route("/chatGPT_response")
 def chatGPT_response():
     user_input = request.args.get("chatbot_input", "")
     wine_option = request.args.get("chatbot_radio", "")
+    if db_connection.is_connected():
+        cursor = db_connection.cursor(dictionary=True)
+        query = "SELECT RSTRNT_NM,RSTRNT_KEY FROM ai_rstrnt WHERE ChatGPT_IND = 'Y'"
+        cursor.execute(query)
+        restaurants = cursor.fetchall()
     conversation = [
             {"role": "system", "content": "You are WineBuddy, the Virtual Sommelier."},
             {"role": "system", "content": f'According to famous sommeliers, what {user_input}? {wine_option}'},
             
         ]
+    print(conversation)
     chatbot_response = get_chatbot_response(conversation)
     #formatted_response, headings = extract_clickable_headings(chatbot_response)
     
