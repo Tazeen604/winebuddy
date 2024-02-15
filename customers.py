@@ -3,9 +3,10 @@ from config_db import openai, create_database_connection
 import openai
 import re
 import mysql.connector
+from bs4 import BeautifulSoup
 import os
 customers_bp = Blueprint('customers', __name__)
-openai.api_key = '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'
+openai.api_key = "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"
 @customers_bp.route('/<page_name>')
 def show_image(page_name):
     try:
@@ -58,13 +59,13 @@ def chatGPT_response_table():
         db_connection = create_database_connection()
         cursor = db_connection.cursor(dictionary=True)
         print("hellooooo"+customer_name)
-        if wine_option == 1:
+        if wine_option == "1":
             query = "SELECT PROMPT_TXT_1 FROM ai_cstmr WHERE AI_CSTMR_START_TXT LIKE %s"
             cursor.execute(query, ('%' + customer_name + '%',))
             cstmr_result = cursor.fetchone()
             prompt_result=cstmr_result["PROMPT_TXT_1"]
             prompt_result=str(prompt_result)
-        elif wine_option == 2:
+        elif wine_option == "2":
             query = "SELECT PROMPT_TXT_2 FROM ai_cstmr WHERE AI_CSTMR_START_TXT LIKE %s"
             cursor.execute(query, ('%' + customer_name + '%',))
             cstmr_result = cursor.fetchone()
@@ -77,53 +78,59 @@ def chatGPT_response_table():
             prompt_result=cstmr_result["PROMPT_TXT_3"]
             prompt_result=str(prompt_result)
         conversation = [
-            {"role": "system", "content": "You are WineBuddy, the Virtual Sommelier."},
-            {"role": "system", "content": f'{prompt_result}? {user_input}'},        
+            {"role": "system", "content": "You are WineBuddy,and BeerBudy the Virtual Sommelier for wine and beer.You can recommend wine or beer as asked"},
+            {"role": "system", "content": f'{prompt_result}? {user_input} also Please return response in tabular format'},        
         ] 
         chatbot_response = get_chatbot_response(conversation)
-        response_lines = chatbot_response.strip().split('\n')
-# Filter out lines that don't contain the expected separator '|'
-        data_lines = [line for line in response_lines if '|' in line]
-# Check if there are at least two lines (header and one data row)
-        if len(data_lines) >= 2:
-    # Extract header and data rows
-            header = data_lines[0].split('|')
-            data_rows = [row.split('|') for row in data_lines[2:]]
-            print(data_rows)
-    # Check if there are data rows
-            if data_rows:
-        # Extract data from rows
-                varie = []
-                descriptions = []
-                popularity_scores = []
-                for row in data_rows:
-                    if all(cell.strip() == '-' for cell in row):
-                        continue
-            # Check if the row consists only of dashes
-                    varie.append(row[0].strip())
-                    descriptions.append(row[1].strip())
-                    popularity_scores.append(row[2].strip())
-            else:
-        # Handle case when there are no data rows
-                varie, descriptions, popularity_scores = [], [], []
-        else:
-    # Handle case when there are not enough lines in the response
-            varie, descriptions, popularity_scores = [], [], []
+        print("response"+chatbot_response)
+        matched_varietals = []
+        query = "SELECT VRTL_NM,VRTL_KEY FROM ai_vrtl"                
+        cursor.execute(query)
+        matched_varietals = cursor.fetchall()
         if chatbot_response is not None:
-    #formatted_response, headings = extract_clickable_headings(chatbot_response)
-            matched_varietals = []
-            query = "SELECT VRTL_NM,VRTL_KEY FROM ai_vrtl"
-            cursor.execute(query)
-            matched_varietals = cursor.fetchall()
-            #print(matched_varietals)
-            formatted_response = chatbot_response
-            result = [{"VRTL_KEY": item["VRTL_KEY"], "VRTL_NM": item["VRTL_NM"]} for item in matched_varietals if item["VRTL_NM"].strip().lower() in [elem.strip().lower() for elem in varie]]
-# Print the result
-            print(result)
-            #result = [{"VRTL_KEY": item["VRTL_KEY"], "VRTL_NM": item["VRTL_NM"]} for item in matched_varietals if item["VRTL_NM"].lower() in [elem.lower() for elem in varie]]
-# Convert each item into a link
-            links = [f'<a href="/restaurants?key={item["VRTL_KEY"]}">{item["VRTL_NM"]}</a>' for item in result]
-            return render_template("chatGPT_response_table.html", var=links,desc=descriptions,score=popularity_scores)
+            tabular_pattern = re.compile(r'\|')
+            if tabular_pattern.search(chatbot_response):
+        # Split the data into lines
+                lines = chatbot_response.strip().split('\n')
+                start_index = next((index for index, line in enumerate(lines) if '|' in line), None)
+                if start_index is not None:
+                    headers = [header.strip() for header in lines[start_index].split('|') if header.strip()]
+                    data_lines = [line.strip() for line in lines[start_index + 2:-1]]
+                else:
+                    print("Table not found in the response.")
+# Create HTML table
+                html_table = "<table>\n<thead>\n"
+                html_table += "".join([f"<th>{header}</th>\n" for header in headers])
+                html_table += "\n</thead><tbody>\n"
+                for line in data_lines:
+                    if '---' in line:
+                        continue
+                    columns = [column.strip() for column in line.split('|') if column.strip()]
+    # Check if the current column is the first column
+                    if columns and columns[0]:
+        # Check if the first column matches any item in matched_varietals
+                        print("first coloumn"+columns[0])
+                        matched = next((item for item in matched_varietals if item['VRTL_NM'].strip().lower() == columns[0].strip().lower()), None)
+                        if matched:
+                            link = f'<a href="/restaurants?key={matched["VRTL_KEY"]}">{matched["VRTL_NM"]}</a>'
+                            columns[0] = link            
+                    html_table += "<tr>\n"
+                    html_table += "".join([f"<td>{column}</td>\n" for column in columns])
+                    html_table += "</tr>\n"
+                html_table += "</tbody>\n</table>"
+                print("html table" + html_table)
+                print("first if")
+                return render_template("chatGPT_response_table.html", token=1,var=html_table)
+            else:
+                print("2nd if")
+        #for heading in headings:
+                formatted_response = chatbot_response
+                for varietal, varietal_key in matched_varietals:
+                    varietal_link = f'<a href="/restaurants?key={varietal_key}">{varietal}</a>'
+                    formatted_response = formatted_response.replace(varietal, varietal_link, 1)
+                paragraphs_with_links = formatted_response.split('\n\n')
+                #print(paragraphs_with_links)
+                return render_template("chatGPT_response_table.html",paragraphs_with_links=paragraphs_with_links)                
         else:
             return "No response from chatbot"
     except Exception as e:
@@ -138,12 +145,14 @@ def restaurants():
     ai_vrtl_key = request.args.get("key")
     session['ai_vrtl_key'] = ai_vrtl_key
     cstmr_key=session.get('ai_cstmr_key')
+    print(cstmr_key)
     try:
         selr_key=[]
         db_connection = create_database_connection()
         cursor = db_connection.cursor(dictionary=True)
-        query="SELECT WINE_SELR.*,CSTMR_WIN_SELR.* FROM CSTMR_WIN_SELR JOIN AI_CSTMR ON CSTMR_WIN_SELR.AI_CSTMR_KEY = AI_CSTMR.AI_CSTMR_KEY JOIN WINE_SELR ON CSTMR_WIN_SELR.WIN_SELR_KEY = WINE_SELR.WINE_SELR_KEY WHERE CSTMR_WIN_SELR.ChatGPT_ACTV_IND = 'Y'"
-        cursor.execute(query)
+        query="""SELECT distinct WINE_SELR.* FROM CSTMR_WIN_SELR JOIN AI_CSTMR ON CSTMR_WIN_SELR.AI_CSTMR_KEY = AI_CSTMR.AI_CSTMR_KEY JOIN WINE_SELR ON CSTMR_WIN_SELR.WIN_SELR_KEY = WINE_SELR.WINE_SELR_KEY WHERE AI_CSTMR.AI_CSTMR_KEY = %s AND CSTMR_WIN_SELR.ChatGPT_ACTV_IND = 'Y'"""
+        print(query)
+        cursor.execute(query, (cstmr_key,))
         restaurants = cursor.fetchall()
         return render_template("restaurants.html", restr=restaurants, vrtl_key=ai_vrtl_key)
     except Exception as e:

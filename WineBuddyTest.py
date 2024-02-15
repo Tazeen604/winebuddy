@@ -7,7 +7,7 @@ from customers import customers_bp
 app = Flask(__name__)
 app.secret_key = '112233'
 app.register_blueprint(customers_bp)
-openai.api_key = ''
+openai.api_key = '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'
 db_connection = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -134,6 +134,6 @@ def get_target_url(restaurant_key, vrtl_key):
         # Handle GET request or other methods
         return "Invalid request method", 405
 if __name__ == "__main__":
-    app.run(host='0.0.0.0')
-    customers_bp.run(host='0.0.0.0')
+    app.run(debug=True)
+    
 
