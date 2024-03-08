@@ -1,9 +1,8 @@
 
 import mysql.connector
 import openai
-
 # Set OpenAI API key
-openai.api_key = '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'
+openai.api_key =''
 
 # Create a function to establish a database connection
 def create_database_connection():

@@ -7,7 +7,7 @@ from customers import customers_bp
 app = Flask(__name__)
 app.secret_key = '112233'
 app.register_blueprint(customers_bp)
-openai.api_key = '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'
+openai.api_key = ''
 db_connection = mysql.connector.connect(
     host="localhost",
     user="root",

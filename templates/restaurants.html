@@ -31,9 +31,16 @@
         <h2>Select Your Favourite Store</h2>
         <form method="POST" action="{{ url_for('external_URL') }}">
             {% for restaurant in restr %}
+            {% if vrtl_key %}
             <div class="p-3">
                 <label>
                     <input type="hidden" name="vrtlkey" value="{{vrtl_key}}" >
+            {% else %}
+            <div class="p-3">
+                <label>
+                    <input type="hidden" name="regkey" value="{{reg_key}}" >
+                    <input type="hidden" name="vrtlkey" value="{{vrtl}}" >
+            {% endif %}
                     <input  type="radio" name="selected_restaurant" value="{{ restaurant.WINE_SELR_KEY }}">
                   {{ restaurant.WINE_SELR_NM }}  
                  </label>
