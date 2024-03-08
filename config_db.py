@@ -8,7 +8,7 @@ openai.api_key =''
 def create_database_connection():
     return mysql.connector.connect(
         host="localhost",
-        user="root",
+        user="admin",
         password="",
         database="qrvino_db"
     )
