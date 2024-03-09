@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import os
 
 #import openai
-
+openai.api_key =''
 customers_bp = Blueprint('customers', __name__)
 
 @customers_bp.route('/<page_name>')
@@ -71,12 +71,6 @@ def chatGPT_response_table():
             cstmr_result = cursor.fetchone()
             prompt_result=cstmr_result["PROMPT_TXT_1"]
             prompt_result=str(prompt_result)
-        elif wine_option == "2":
-            query = "SELECT PROMPT_TXT_2 FROM ai_cstmr WHERE AI_CSTMR_START_TXT LIKE %s"
-            cursor.execute(query, ('%' + customer_name + '%',))
-            cstmr_result = cursor.fetchone()
-            prompt_result=cstmr_result["PROMPT_TXT_2"]
-            prompt_result=str(prompt_result)
         else:
             query = "SELECT PROMPT_TXT_3 FROM ai_cstmr WHERE AI_CSTMR_START_TXT LIKE %s"
             cursor.execute(query, ('%' + customer_name + '%',))
@@ -94,7 +88,7 @@ def chatGPT_response_table():
         cursor.execute(query)
         matched_varietals = cursor.fetchall()
         matched_regions = []
-        query = "SELECT CNTRGN_KEY,CNTRGN_NM FROM cntrgn"                
+        query = "SELECT CNTRGN_KEY,CNTRGN_NM FROM CNTRGN"                
         cursor.execute(query)
         matched_regions = cursor.fetchall()
         if chatbot_response is not None:
@@ -265,8 +259,6 @@ def external_URL():
         selected_restaurant_key = request.form.get("selected_restaurant")  
         vrtl_key = request.form.get('vrtlkey')
         reg_key = request.form.get('regkey')
-        print(vrtl_key)
-        print(reg_key)
         if vrtl_key and reg_key:   
             target_url = get_target_url_reg(selected_restaurant_key,reg_key,vrtl_key)
         else:
